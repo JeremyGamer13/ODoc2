@@ -27,7 +27,7 @@
     <body>
         <img width=128 height=128 style="margin-top: calc(50% - 64px); margin-left: calc(50% - 64px);" src="assets/icons/odoc.png">
         <p style="text-align: center;" id="status_display">Caching assets...</p>
-        <img width=48 height=48 src="assets/load_circle.png" style="margin-left: calc(50% - 24px);" class="load_circle">
+        <img width=48 height=48 src="assets/load_circle.png" alt="" style="margin-left: calc(50% - 24px);" class="load_circle">
     </body>
     <script>
         const display = document.getElementById("status_display")
@@ -47,9 +47,12 @@
             })
         }
         Promise.all([
-            cacheImage("assets/icons/odoc.png")
+            cacheImage("assets/icons/trash.png"),
+            cacheImage("assets/icons/file.png"),
+            cacheImage("assets/icons/folder.png")
         ]).then(() => {
             display.innerHTML = `Launching...`
+            document.body.innerHTML = `<div></div>`
         }).catch(err => panic(err, "cache"))
     </script>
 </html>
