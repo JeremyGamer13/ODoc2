@@ -1,58 +1,82 @@
 <!DOCTYPE html>
 <html lang="en-US">
     <head>
-        <title>ODoc 2.0 Launcher</title>
+        <title>ODoc 2.0</title>
         <link rel="icon" href="./assets/icons/odoc.png">
         <style>
             @keyframes load_circle {
                 0% { rotate: 0deg; }
                 100% { rotate: 360deg; }
             }
-        
             * {
-                font-family: monospace;
-            }
-            body {
-                background-color: black;
-                color: white;
-            }
-            .load_circle {
-                animation-name: load_circle;
-                animation-duration: 3s;
-                animation-iteration-count: infinite;
-                animation-timing-function: linear;
+                user-select: none;
             }
         </style>
     </head>
-    <body>
-        <img width=128 height=128 style="margin-top: calc(50% - 64px); margin-left: calc(50% - 64px);" src="assets/icons/odoc.png">
-        <p style="text-align: center;" id="status_display">Caching assets...</p>
-        <img width=48 height=48 src="assets/load_circle.png" alt="" style="margin-left: calc(50% - 24px);" class="load_circle">
+    <body style="background-color: black;">
+        <div id="allLoading" style="color: white;font-family: monospace;display: flex;align-content: center;justify-content: center;flex-wrap: nowrap;flex-direction: column;align-items: center;transform: translateY(50%);">
+            <img width=128 height=128 src="assets/icons/odoc.png">
+            <p style="text-align: center;" id="status_display">Caching assets...</p>
+            <img width=48 height=48 src="assets/load_circle.png" alt="" style="animation-name: load_circle;animation-duration: 3s;animation-iteration-count: infinite;animation-timing-function: linear;">
+        </div>
+        <script id="__dXf___AGWAkHBA8HWJW9wa7wKANOhUWGFUSDiufIOWf">
+            const display = document.getElementById("status_display")
+            const allLoading = document.getElementById("allLoading")
+            function panic(err, type) {
+                document.body.innerHTML = `<div style="position:absolute;left:0px;top:0px;width:100%;height:100%;background-color:#bb1155"><p>${String(type).substring(0,1).toUpperCase()}${String(type).substring(1,String(type).length)}Error: ${String(err).replace(/</gmi, "&lt;")};<br>This error has caused ODoc to fail to launch.<br><br>StackTrace:<br>${err?.stack}</p></div>`
+                console.error(err, err?.stack)
+                throw err
+            }
+            function cacheImage(src) {
+                return new Promise((resolve, reject) => {
+                    const image = new Image()
+                    image.src = src
+                    image.onload = () => resolve()
+                    image.onerror = (e) => {
+                        reject(`Couldnt cache ${src}; ` + JSON.stringify(e))
+                    }
+                })
+            }
+            function loadScript(src) {
+                return new Promise((resolve, reject) => {
+                    const script = document.createElement("script")
+                    script.src = `scripts/${src}.js`
+                    script.onload = () => {
+                        resolve()
+                    }
+                    script.onerror = reject
+                    document.body.append(script)
+                })
+            }
+            Promise.all([
+                cacheImage("assets/icons/odoc.png"),
+                cacheImage("assets/icons/odoc-taskbar.png"),
+                cacheImage("assets/icons/trash.png"),
+                cacheImage("assets/icons/file.png"),
+                cacheImage("assets/icons/folder.png"),
+                cacheImage("assets/wallpapers/default.jpg"),
+                loadScript("classes/machine"),
+                loadScript("programs/webframe2"),
+                loadScript("classes/desktop"),
+            ]).then(() => {
+                display.innerHTML = `Launching...`
+                allLoading.style.opacity = "1"
+                setTimeout(() => {
+                    setTimeout(() => {
+                        allLoading.remove()
+                        document.getElementById("__dXf___AGWAkHBA8HWJW9wa7wKANOhUWGFUSDiufIOWf").remove()
+                        document.body.style = ""
+
+                        loadScript("main")
+                    }, 1000)
+                    const a = setInterval(() => {
+                        allLoading.style.opacity = Number(allLoading.style.opacity) - 0.02
+                    }, 10)
+                    setTimeout(() => {
+                        clearInterval(a)
+                    }, 1000)
+                }, 1000)
+            }).catch(err => panic(err, "cache"))
+        </script>
     </body>
-    <script>
-        const display = document.getElementById("status_display")
-        function panic(err, type) {
-            document.body.innerHTML = `<div style="position:absolute;left:0px;top:0px;width:100%;height:100%;background-color:#bb1155"><p>${String(type).substring(0,1).toUpperCase()}${String(type).substring(1,String(type).length)}Error: ${String(err).replace(/</gmi, "&lt;")};<br>This error has caused ODoc to fail to launch.<br><br>StackTrace:<br>${err?.stack}</p></div>`
-            console.error(err, err?.stack)
-            throw err
-        }
-        function cacheImage(src) {
-            return new Promise((resolve, reject) => {
-                const image = new Image()
-                image.src = src
-                image.onload = () => resolve()
-                image.onerror = (e) => {
-                    reject(`Couldnt cache ${src}; ` + JSON.stringify(e))
-                }
-            })
-        }
-        Promise.all([
-            cacheImage("assets/icons/trash.png"),
-            cacheImage("assets/icons/file.png"),
-            cacheImage("assets/icons/folder.png")
-        ]).then(() => {
-            display.innerHTML = `Launching...`
-            document.body.innerHTML = `<div></div>`
-        }).catch(err => panic(err, "cache"))
-    </script>
 </html>

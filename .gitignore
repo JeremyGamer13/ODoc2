@@ -1,0 +1,6 @@
+# dont push api to vercel since it wont work lol
+index.js
+/api
+api/
+api*
+api/*
